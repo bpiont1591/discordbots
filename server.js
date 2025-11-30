@@ -1,32 +1,33 @@
-// server.js
+require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
+const { v4: uuidv4 } = require("uuid");
+
 const app = express();
-app.use(cors());
 app.use(express.json());
 
-// 🌟 Przykładowa baza kluczy licencyjnych w pamięci
-// Każdy klucz można użyć tylko raz
-const licenses = {
-  "KLUCZ_TESTOWY_1": { used: false },
-  "KLUCZ_TESTOWY_2": { used: false },
-};
+const PORT = process.env.PORT || 3000;
+const API_KEY = process.env.API_KEY;
 
-app.post("/verify", (req, res) => {
+// Prosta baza licencji w pamięci (możesz przerzucić do bazy)
+const licenses = {};
+
+app.post("/generate", (req, res) => {
   const { key } = req.body;
+  if (key !== API_KEY) return res.status(403).json({ error: "Invalid API key" });
 
-  if (!key) return res.json({ valid: false, reason: "Brak klucza" });
-
-  const license = licenses[key];
-
-  if (!license) return res.json({ valid: false, reason: "Niepoprawny klucz" });
-  if (license.used) return res.json({ valid: false, reason: "Klucz już użyty" });
-
-  // Oznacz klucz jako użyty
-  license.used = true;
-
-  res.json({ valid: true });
+  const newLicense = uuidv4();
+  licenses[newLicense] = { used: false };
+  return res.json({ license: newLicense });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Licencje API działa na porcie ${PORT}`));
+app.post("/verify", (req, res) => {
+  const { license } = req.body;
+  if (!licenses[license]) return res.json({ valid: false, reason: "Nieznana licencja" });
+  if (licenses[license].used) return res.json({ valid: false, reason: "Licencja już użyta" });
+
+  licenses[license].used = true;
+  return res.json({ valid: true });
+});
+
+app.listen(PORT, () => console.log(`✅ API licencji działa na porcie ${PORT}`));
+
