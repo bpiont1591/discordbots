@@ -1,15 +1,32 @@
+// server.js
 const express = require("express");
+const cors = require("cors");
 const app = express();
-const PORT = process.env.PORT || 3000;
+app.use(cors());
+app.use(express.json());
 
-// przykładowa baza kluczy w pamięci
-const licenses = { "ABC123": true, "DEF456": true };
+// 🌟 Przykładowa baza kluczy licencyjnych w pamięci
+// Każdy klucz można użyć tylko raz
+const licenses = {
+  "KLUCZ_TESTOWY_1": { used: false },
+  "KLUCZ_TESTOWY_2": { used: false },
+};
 
-app.get("/verify", (req, res) => {
-  const key = req.query.key;
-  if (!key) return res.json({ valid: false });
-  res.json({ valid: licenses[key] || false });
+app.post("/verify", (req, res) => {
+  const { key } = req.body;
+
+  if (!key) return res.json({ valid: false, reason: "Brak klucza" });
+
+  const license = licenses[key];
+
+  if (!license) return res.json({ valid: false, reason: "Niepoprawny klucz" });
+  if (license.used) return res.json({ valid: false, reason: "Klucz już użyty" });
+
+  // Oznacz klucz jako użyty
+  license.used = true;
+
+  res.json({ valid: true });
 });
 
-app.listen(PORT, () => console.log(`✅ Serwer licencji działa na porcie ${PORT}`));
-
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`✅ Licencje API działa na porcie ${PORT}`));
