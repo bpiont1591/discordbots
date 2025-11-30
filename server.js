@@ -1,25 +1,33 @@
-import express from "express";
-import fs from "fs";
-
+const express = require("express");
 const app = express();
 app.use(express.json());
 
-// Licencje w JSON – możesz też trzymać w bazie danych.
-const licenses = JSON.parse(fs.readFileSync("licenses.json"));
+const licenses = {
+  "ABC-123-XYZ": { valid: true, owner: "Janek", expires: "2025-12-30" },
+  "VIP-999-555": { valid: true, owner: "Kuba", expires: "2026-01-01" }
+};
 
-app.post("/verify", (req, res) => {
-  const { license_key, guild_id, ip } = req.body;
+app.post("/api/license/verify", (req, res) => {
+  const { license, botId } = req.body;
 
-  const lic = licenses.find(l => l.key === license_key);
-  if (!lic) return res.json({ valid: false, reason: "Invalid license" });
+  if (!license || !licenses[license]) {
+    return res.json({ valid: false, reason: "Brak licencji" });
+  }
 
-  if (lic.guild_id !== guild_id)
-    return res.json({ valid: false, reason: "Unauthorized guild" });
+  const data = licenses[license];
 
-  if (lic.blocked)
-    return res.json({ valid: false, reason: "License revoked" });
+  if (!data.valid) {
+    return res.json({ valid: false, reason: "Licencja wyłączona" });
+  }
+
+  const now = Date.now();
+  const exp = new Date(data.expires).getTime();
+
+  if (exp < now) {
+    return res.json({ valid: false, reason: "Licencja wygasła" });
+  }
 
   return res.json({ valid: true });
 });
 
-app.listen(3000, () => console.log("License server running on port 3000"));
+app.listen(3000, () => console.log("🚀 Serwer licencji działa na porcie 3000"));
