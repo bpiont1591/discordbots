@@ -1,33 +1,15 @@
 const express = require("express");
 const app = express();
-app.use(express.json());
+const PORT = process.env.PORT || 3000;
 
-const licenses = {
-  "ABC-123-XYZ": { valid: true, owner: "Janek", expires: "2025-12-30" },
-  "VIP-999-555": { valid: true, owner: "Kuba", expires: "2026-01-01" }
-};
+// przykładowa baza kluczy w pamięci
+const licenses = { "ABC123": true, "DEF456": true };
 
-app.post("/api/license/verify", (req, res) => {
-  const { license, botId } = req.body;
-
-  if (!license || !licenses[license]) {
-    return res.json({ valid: false, reason: "Brak licencji" });
-  }
-
-  const data = licenses[license];
-
-  if (!data.valid) {
-    return res.json({ valid: false, reason: "Licencja wyłączona" });
-  }
-
-  const now = Date.now();
-  const exp = new Date(data.expires).getTime();
-
-  if (exp < now) {
-    return res.json({ valid: false, reason: "Licencja wygasła" });
-  }
-
-  return res.json({ valid: true });
+app.get("/verify", (req, res) => {
+  const key = req.query.key;
+  if (!key) return res.json({ valid: false });
+  res.json({ valid: licenses[key] || false });
 });
 
-app.listen(3000, () => console.log("🚀 Serwer licencji działa na porcie 3000"));
+app.listen(PORT, () => console.log(`✅ Serwer licencji działa na porcie ${PORT}`));
+
