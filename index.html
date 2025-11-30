@@ -4,68 +4,39 @@
   <title>Panel Licencji</title>
   <style>
     body { font-family: Arial; background: #111; color: white; padding: 20px; }
-    table { width: 100%; max-width: 600px; border-collapse: collapse; margin-bottom: 20px; }
-    td, th { border: 1px solid #444; padding: 10px; text-align: left; }
-    button { padding: 5px 10px; margin-left: 10px; cursor: pointer; }
-    input { padding: 5px; }
+    table { width: 400px; border-collapse: collapse; margin-top: 20px; }
+    td, th { border: 1px solid #444; padding: 10px; text-align: center; }
+    button { padding: 5px 10px; margin-top: 10px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-<h1>🔑 Panel Licencji</h1>
-
-<h2>Dodaj nową licencję</h2>
-<button id="addLicense">Dodaj klucz</button>
-<p id="newKey"></p>
-
-<h2>Aktywne Licencje</h2>
+<h1>🔑 Aktywne Licencje</h1>
+<button id="addKey">Dodaj klucz</button>
 <table id="table">
-  <tr>
-    <th>Klucz</th>
-    <th>Status</th>
-  </tr>
+  <tr><th>Klucz</th><th>Status</th></tr>
 </table>
 
 <script>
-const API_URL = "https://peppy-cuchufli-831cff.netlify.app/.netlify/functions/api";
+let licenses = {}; // przechowuje klucze w pamięci (strona)  
 
-// Funkcja pobiera licencje i wyświetla tabelę
-async function loadLicenses() {
-  const res = await fetch(API_URL);
-  const data = await res.json();
-  
-  const table = document.getElementById("table");
-  table.innerHTML = `
-    <tr>
-      <th>Klucz</th>
-      <th>Status</th>
-    </tr>
-  `;
-
-  data.licenses.forEach(l => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${l.key}</td>
-      <td>${l.used ? "Użyta" : "Aktywna"}</td>
-    `;
+function renderTable() {
+  const table = document.getElementById('table');
+  table.innerHTML = '<tr><th>Klucz</th><th>Status</th></tr>';
+  Object.keys(licenses).forEach(key => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${key}</td><td>${licenses[key] ? "Aktywna" : "Nieaktywna"}</td>`;
     table.appendChild(row);
   });
 }
 
-// Funkcja dodaje nowy klucz
-document.getElementById("addLicense").addEventListener("click", async () => {
-  const res = await fetch(`${API_URL}/add`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({})
-  });
-  const data = await res.json();
-  document.getElementById("newKey").innerText = "Nowy klucz: " + data.key;
-  loadLicenses();
+document.getElementById('addKey').addEventListener('click', () => {
+  const newKey = Math.random().toString(36).substring(2,12).toUpperCase();
+  licenses[newKey] = true;
+  renderTable();
 });
 
-// Ładujemy tabelę przy starcie
-loadLicenses();
+renderTable();
 </script>
 
 </body>
