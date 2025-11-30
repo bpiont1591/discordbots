@@ -1,50 +1,33 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Panel Licencji</title>
-<style>
-  body { font-family: Arial; background: #0e0e0e; color: white; text-align: center; }
-  .box { width: 400px; margin: auto; background: #1c1c1c; padding: 20px; margin-top: 40px; border-radius: 10px; }
-  input, button { width: 90%; padding: 10px; margin-top: 10px; border-radius: 5px; }
-</style>
+  <meta charset="UTF-8">
+  <title>Panel licencji</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    td, th { border: 1px solid #ddd; padding: 8px; }
+    th { background: #333; color: white; }
+  </style>
 </head>
 <body>
-  <div class="box">
-    <h2>🔐 Panel Licencji</h2>
-    <input id="key" placeholder="LC-XXX-XXX">
-    <input id="guild" placeholder="Guild ID">
-    <button onclick="add()">Dodaj licencję</button>
-    <button onclick="block()">Zablokuj licencję</button>
-    <p id="result"></p>
-  </div>
+  <h2>🔐 Panel Licencji</h2>
+  <p>Tu możesz przeglądać swoje licencje i je wyłączać.</p>
 
-<script>
-async function add() {
-  const r = await fetch("/add", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      key: document.getElementById("key").value,
-      guild: document.getElementById("guild").value
-    })
-  });
-
-  document.getElementById("result").innerText = await r.text();
-}
-
-async function block() {
-  const r = await fetch("/block", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      key: document.getElementById("key").value
-    })
-  });
-
-  document.getElementById("result").innerText = await r.text();
-}
-</script>
+  <table>
+    <tr>
+      <th>Klucz</th>
+      <th>Właściciel</th>
+      <th>Ważna do</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <td>ABC-123-XYZ</td>
+      <td>Janek</td>
+      <td>2025-12-30</td>
+      <td>Aktywna</td>
+    </tr>
+  </table>
 </body>
 </html>
 
